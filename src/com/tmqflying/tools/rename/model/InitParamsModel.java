@@ -5,6 +5,7 @@
  */
 package com.tmqflying.tools.rename.model;
 
+
 /**
  * <b>InitParamsModel.java</b><br>
  * <b>Desc:</b> <br>
@@ -14,14 +15,16 @@ package com.tmqflying.tools.rename.model;
  */
 public class InitParamsModel {
 	// base params
-	private String filePath = null;
-	private String newName = null;
+	private String filePath = "D:/Pictures/Funny";
+	private String newName = "";
 	private String nameSeparator = null;
 	private String fileExtension = null;
+	private String existFiles = ""; // exists file name string 
 	
 	// count params
 	private int count = 0;
 	private int success = 0;
+	private int skipping = 0;
 	
 	private int fileSequenceNum = 0;
 	
@@ -108,5 +111,29 @@ public class InitParamsModel {
 	 */
 	public void setFileSequenceNum(int fileSequenceNum) {
 		this.fileSequenceNum = fileSequenceNum;
+	}
+	/**
+	 * @return the existFiles
+	 */
+	public String getExistFiles() {
+		return existFiles;
+	}
+	/**
+	 * @param existFiles the existFiles to set
+	 */
+	public void setExistFiles(String existFiles) {
+		this.existFiles = existFiles;
+	}
+	/**
+	 * @return the skipping
+	 */
+	public int getSkipping() {
+		return skipping;
+	}
+	/**
+	 * @param skipping the skipping to set
+	 */
+	public void setSkipping(int skipping) {
+		this.skipping = skipping;
 	}
 }
