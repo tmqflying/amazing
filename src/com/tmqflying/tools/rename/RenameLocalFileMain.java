@@ -55,6 +55,7 @@ public class RenameLocalFileMain {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\ncount:").append(params.getCount());
 		sb.append("\nsuccess:").append(params.getSuccess());
+		sb.append("\nskipping:").append(params.getSkipping());
 		sb.append("\nfinished.");
 		
 		System.out.println(sb.toString());
@@ -81,37 +82,51 @@ public class RenameLocalFileMain {
 			
 			for (File fileTemp : fileList) {
 				if (fileTemp.isFile()) {
-					params.setCount(params.getCount() + 1);
-					File newFile = null;
-					while (newFile == null || newFile.exists()) {
-						params.setFileSequenceNum(params.getFileSequenceNum() + 1);
-						newFile = new File(getNewFileName(params, fileTemp));
-					}
-					
-					boolean executeFlag = fileTemp.renameTo(newFile);
-					
-					if (executeFlag) {
-						params.setSuccess(params.getSuccess() + 1);
-						System.out.println("--" + fileTemp.getName() + "->" + newFile.getName());
-					}
+					renameFile(params, fileTemp);
 				}
 			}
 			
 		} else {
+			renameFile(params, fileDir);
+		}
+	}
 
-			params.setCount(params.getCount() + 1);
-			File newFile = null;
-			while (newFile == null || newFile.exists()) {
-				params.setFileSequenceNum(params.getFileSequenceNum() + 1);
-				newFile = new File(getNewFileName(params, fileDir));
-			}
+	/**
+	 * <b>renameFile</b><br>
+	 * <b>Desc:</b> <br>
+	 *
+	 * @author Maoqitao May 3, 2015 11:09:52 PM
+	 *
+	 * @param params
+	 * @param fileTemp
+	 */
+	private static void renameFile(InitParamsModel params, File oldFile) {
+		params.setCount(params.getCount() + 1);
+		File newFile = null;
+		while (newFile == null || newFile.exists()) {
+			params.setFileSequenceNum(params.getFileSequenceNum() + 1);
+			newFile = new File(getNewFileName(params, oldFile));
 			
-			boolean executeFlag = fileDir.renameTo(newFile);
-			
-			if (executeFlag) {
-				params.setSuccess(params.getSuccess() + 1);
-				System.out.println(fileDir.getName() + "->" + newFile.getName());
+			if (newFile != null && newFile.exists()) {
+				// if new file exits, add to exists file string
+				params.setExistFiles(params.getExistFiles() + newFile.getName() + ",");
 			}
+		}
+		
+		// check the file is in exist file string? if it is, skip it.
+		if (oldFile != null && params.getExistFiles().indexOf(oldFile.getName() + ",") > -1) {
+			// reduce the sequence number
+			params.setFileSequenceNum(params.getFileSequenceNum() - 1);
+			params.setSkipping(params.getSkipping() + 1);
+			System.out.println("--" + oldFile.getName() + "->skipping");
+			return;
+		}
+		
+		boolean executeFlag = oldFile.renameTo(newFile);
+		
+		if (executeFlag) {
+			params.setSuccess(params.getSuccess() + 1);
+			System.out.println("--" + oldFile.getName() + "->" + newFile.getName());
 		}
 	}
 
