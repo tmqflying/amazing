@@ -1,0 +1,9 @@
+base ->
+-jsp-api.jar
+-servlet-api.jar
+
+
+mail ->
+-javax.mail.jar
+
+
