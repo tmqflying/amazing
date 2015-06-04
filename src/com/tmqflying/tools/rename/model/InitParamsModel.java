@@ -16,8 +16,8 @@ package com.tmqflying.tools.rename.model;
 public class InitParamsModel {
 	// base params
 	private String filePath = "D:/Pictures/Funny";
-	private String newName = "";
-	private String nameSeparator = null;
+	private String newName = "funny";
+	private String nameSeparator = "_";
 	private String fileExtension = null;
 	private String existFiles = ""; // exists file name string 
 	

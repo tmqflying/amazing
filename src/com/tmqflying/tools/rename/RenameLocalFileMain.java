@@ -6,6 +6,8 @@
 package com.tmqflying.tools.rename;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tmqflying.tools.rename.model.InitParamsModel;
 
@@ -71,7 +73,7 @@ public class RenameLocalFileMain {
 	 */
 	private static void processing(InitParamsModel params) {
 		// Get base params
-		// Get file name list
+		// Get file name list, using regular expression match.
 		// Check file exists
 		// Rename file
 		// Loop until finish
@@ -79,7 +81,10 @@ public class RenameLocalFileMain {
 		File fileDir = new File(params.getFilePath());
 		if (fileDir.isDirectory()) {
 			File[] fileList = fileDir.listFiles();
+			// match the exists name
+			matchExistsFile(params, fileList);
 			
+			// rename
 			for (File fileTemp : fileList) {
 				if (fileTemp.isFile()) {
 					renameFile(params, fileTemp);
@@ -89,6 +94,36 @@ public class RenameLocalFileMain {
 		} else {
 			renameFile(params, fileDir);
 		}
+	}
+
+	/**
+	 * <b>matchExistsFile</b><br>
+	 * <b>Desc:</b> <br>
+	 *
+	 * @author Tmq 2015年6月5日 下午9:51:22
+	 *
+	 * @param params
+	 * @param fileList
+	 */
+	private static void matchExistsFile(InitParamsModel params, File[] fileList) {
+		StringBuilder sb = new StringBuilder();
+		
+		String regex = params.getNewName() + params.getNameSeparator() + "\\d+(([\\.])|([^\\.]$))";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = null;
+		
+		for (int v = 0; v < fileList.length; v ++) {
+			String fileName = fileList[v].getName();
+			matcher = pattern.matcher(fileName);
+			
+			// if matched, then add the name to exists names.
+			if (matcher.find()) {
+				sb.append(fileName).append(",");
+			}
+		}
+		
+		params.setExistFiles(sb.toString());
+		System.out.println("--exists file: " + params.getExistFiles());
 	}
 
 	/**
@@ -102,28 +137,26 @@ public class RenameLocalFileMain {
 	 */
 	private static void renameFile(InitParamsModel params, File oldFile) {
 		params.setCount(params.getCount() + 1);
-		File newFile = null;
-		while (newFile == null || newFile.exists()) {
-			params.setFileSequenceNum(params.getFileSequenceNum() + 1);
-			newFile = new File(getNewFileName(params, oldFile));
-			
-			if (newFile != null && newFile.exists()) {
-				// if new file exits, add to exists file string
-				params.setExistFiles(params.getExistFiles() + newFile.getName() + ",");
-			}
-		}
-		
+
 		// check the file is in exist file string? if it is, skip it.
 		if (oldFile != null && params.getExistFiles().indexOf(oldFile.getName() + ",") > -1) {
 			// reduce the sequence number
-			params.setFileSequenceNum(params.getFileSequenceNum() - 1);
 			params.setSkipping(params.getSkipping() + 1);
 			System.out.println("--" + oldFile.getName() + "->skipping");
 			return;
 		}
 		
+		// if the old file is not matched exists names, get the new file name.
+		File newFile = null;
+		while (newFile == null || newFile.exists()) {
+			params.setFileSequenceNum(params.getFileSequenceNum() + 1);
+			newFile = new File(getNewFileName(params, oldFile));
+		}
+		
+		// execute the rename option.
 		boolean executeFlag = oldFile.renameTo(newFile);
 		
+		// print infomantion.
 		if (executeFlag) {
 			params.setSuccess(params.getSuccess() + 1);
 			System.out.println("--" + oldFile.getName() + "->" + newFile.getName());
